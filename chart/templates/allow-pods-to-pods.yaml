@@ -1,0 +1,58 @@
+{{- if $.Values.podsToPods }}
+{{- range $content := $.Values.podsToPods }}
+{{- range $sourcePod := $content.sourcePods }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $sourcePod }}-pods-to-pods-of-{{ $content.targetNamespace }}-egress-policy
+  namespace: {{ $content.sourceNamespace }}
+  labels:
+    platform: {{ $.Values.global.platform }}
+    environment: {{ $.Values.global.environment }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ $sourcePod }}
+  policyTypes:
+  - Egress
+  egress: 
+  - to:
+    {{- range $targetPod := $content.targetPods }}
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: {{ $content.targetNamespace }}
+      podSelector:
+        matchLabels:
+          app: {{ $targetPod }}
+    {{- end }}
+{{- end }}
+{{- range $targetPod := $content.targetPods }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: from-special-pods-of-{{ $content.sourceNamespace }}-to-{{ $targetPod }}-pods-{{ randNumeric 4 }}-ingress-policy
+  namespace: {{ $content.targetNamespace }}
+  labels:
+    platform: {{ $.Values.global.platform }}
+    environment: {{ $.Values.global.environment }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ $targetPod }}
+  policyTypes:
+  - Ingress
+  ingress: 
+  - from:
+    {{- range $sourcePod := $content.sourcePods }}
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: {{ $content.sourceNamespace }}
+      podSelector:
+        matchLabels:
+          app: {{ $sourcePod }}
+    {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

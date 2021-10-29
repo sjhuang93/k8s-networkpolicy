@@ -1,0 +1,10 @@
+# The Chart infomation
+apiVersion: v2                                
+name: networkpolicy
+version: 1.0.0
+description: Manage networkpolicy easily
+type: application               
+home: https://github.com/sjhuang93/k8s-networkpolicy          
+maintainers:
+  - name: sjhuang93
+    email: sjhuang93@gmail.com

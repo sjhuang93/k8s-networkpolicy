@@ -1,0 +1,50 @@
+{{- if $.Values.namespaceToPods }}
+{{- range $content := $.Values.namespaceToPods }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $content.sourceNamespace }}-ns-to-pods-of-{{ $content.targetNamespace }}-egress-policy
+  namespace: {{ $content.sourceNamespace }}
+  labels:
+    platform: {{ $.Values.global.platform }}
+    environment: {{ $.Values.global.environment }}
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress: 
+  - to:
+    {{- range $targetPod := $content.targetPods }}
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: {{ $content.targetNamespace }}
+      podSelector:
+        matchLabels:
+          app: {{ $targetPod }}
+    {{- end }}
+{{- range $targetPod := $content.targetPods }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: from-{{ $content.sourceNamespace }}-ns-to-{{ $targetPod }}-pods-{{ randNumeric 4 }}-ingress-policy
+  namespace: {{ $content.targetNamespace }}
+  labels:
+    platform: {{ $.Values.global.platform }}
+    environment: {{ $.Values.global.environment }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ $targetPod }}
+  policyTypes:
+  - Ingress
+  ingress: 
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: {{ $content.sourceNamespace }}
+      podSelector: {}  
+{{- end }}
+{{- end }}
+{{- end }}

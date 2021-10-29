@@ -1,0 +1,27 @@
+{{- if $.Values.podsToCidrs }}
+{{- range $content := $.Values.podsToCidrs }}
+{{- range $sourcePod := $content.sourcePods }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $sourcePod }}-pods-to-cidrs-egress-policy
+  namespace: {{ $content.sourceNamespace }}
+  labels:
+    platform: {{ $.Values.global.platform }}
+    environment: {{ $.Values.global.environment }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ $sourcePod }}
+  policyTypes:
+  - Egress
+  egress: 
+  - to:
+    {{- range $targetCidr := $content.targetCidrs }}
+    - ipBlock:
+        cidr: {{ $targetCidr }}
+    {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
