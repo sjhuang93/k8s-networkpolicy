@@ -1,7 +1,7 @@
 # k8s-networkpolicy
 This chart is for manage networkpolicy easily.
 
-Automatically generate networkpolicy fulfill your policy.
+Automatically generate networkpolicy fulfill your policy.
 
 ## How to use
 
